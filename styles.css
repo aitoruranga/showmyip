@@ -274,3 +274,31 @@ h2 {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
 }
+
+/* Footer */
+.app-footer {
+    text-align: center;
+    margin-top: 1rem;
+    padding: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.app-footer p {
+    margin-bottom: 0.5rem;
+}
+
+.app-footer p:last-child {
+    margin-bottom: 0;
+}
+
+.app-footer a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.app-footer a:hover {
+    color: #60a5fa;
+    text-decoration: underline;
+}
