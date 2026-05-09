@@ -4,31 +4,70 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function initApp() {
     try {
-        // Fetch IP and details from an API that supports HTTPS and CORS
-        const response = await fetch('https://ipapi.co/json/');
-        const data = await response.json();
+        let ipv4 = null;
+        let ipv6 = null;
+        let mainData = null;
 
-        if (data.error) {
-            throw new Error(data.reason || "Failed to fetch IP details");
+        // Try getting IPv4
+        try {
+            const res4 = await fetch('https://api.ipify.org?format=json');
+            const data4 = await res4.json();
+            ipv4 = data4.ip;
+        } catch (e) {
+            console.log("IPv4 blocked or unavailable");
         }
 
-        updateUI(data);
-        saveAndShowHistory(data.ip);
-        initMap(data.latitude, data.longitude, data.city);
+        // Try getting IPv6
+        try {
+            const res6 = await fetch('https://api6.ipify.org?format=json');
+            const data6 = await res6.json();
+            ipv6 = data6.ip;
+        } catch (e) {
+            console.log("IPv6 not available");
+        }
+
+        // Fetch details for whichever IP we can get (ipapi uses the preferred one)
+        const response = await fetch('https://ipapi.co/json/');
+        mainData = await response.json();
+
+        if (mainData.error) {
+            throw new Error(mainData.reason || "Failed to fetch IP details");
+        }
+
+        // Fallbacks if ipify failed but ipapi succeeded
+        let currentIp = mainData.ip;
+        if (currentIp.includes(':') && !ipv6) ipv6 = currentIp;
+        if (!currentIp.includes(':') && !ipv4) ipv4 = currentIp;
+
+        updateUI(mainData, ipv4, ipv6);
+        saveAndShowHistory(currentIp); // Save the preferred connection IP
+        initMap(mainData.latitude, mainData.longitude, mainData.city);
 
     } catch (error) {
         console.error("Error fetching IP data:", error);
-        document.getElementById('ip-display').textContent = "Error";
-        document.getElementById('ip-display').classList.remove('skeleton-text');
-        document.getElementById('isp-display').textContent = "Could not load connection details. Ad-blockers might block IP APIs.";
+        if(document.getElementById('ipv4-wrapper')) {
+            document.getElementById('ipv4-wrapper').style.display = 'flex';
+            document.getElementById('ipv4-display').textContent = "Error";
+            document.getElementById('ipv4-display').classList.remove('skeleton-text');
+            document.getElementById('isp-display').textContent = "Could not load connection details. Ad-blockers might block IP APIs.";
+        }
     }
 }
 
-function updateUI(data) {
-    // Main IP
-    const ipDisplay = document.getElementById('ip-display');
-    ipDisplay.textContent = data.ip;
-    ipDisplay.classList.remove('skeleton-text');
+function updateUI(data, ipv4, ipv6) {
+    // Main IPs
+    if (ipv4) {
+        document.getElementById('ipv4-wrapper').style.display = 'flex';
+        const v4Disp = document.getElementById('ipv4-display');
+        v4Disp.textContent = ipv4;
+        v4Disp.classList.remove('skeleton-text');
+    }
+    if (ipv6) {
+        document.getElementById('ipv6-wrapper').style.display = 'flex';
+        const v6Disp = document.getElementById('ipv6-display');
+        v6Disp.textContent = ipv6;
+        v6Disp.classList.remove('skeleton-text');
+    }
 
     // ISP
     document.getElementById('isp-display').textContent = data.org || data.asn || "Unknown Provider";

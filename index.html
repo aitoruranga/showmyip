@@ -19,7 +19,16 @@
     <main class="container">
         <header class="glass-panel text-center">
             <h1>Your Public IP</h1>
-            <div id="ip-display" class="skeleton-text">Loading...</div>
+            <div class="ip-versions-container">
+                <div id="ipv4-wrapper" class="ip-wrapper" style="display: none;">
+                    <span class="ip-badge v4">IPv4</span>
+                    <div id="ipv4-display" class="skeleton-text">Loading...</div>
+                </div>
+                <div id="ipv6-wrapper" class="ip-wrapper" style="display: none;">
+                    <span class="ip-badge v6">IPv6</span>
+                    <div id="ipv6-display" class="skeleton-text">Loading...</div>
+                </div>
+            </div>
             <p id="isp-display" class="subtitle"></p>
         </header>
 
